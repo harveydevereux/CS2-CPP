@@ -1,18 +1,22 @@
 // Cristinel Ababei, January 2009, Fargo ND
 // E-mail: cristinel.ababei@ndsu.edu
 //
-// This is a C++ implementation of CS2 min-cost-max-flow scaling algorithm. 
+// This is a C++ implementation of CS2 min-cost-max-flow scaling algorithm.
 //
-// This is intended to be one of the cleanest and simplest to use minimum-cost 
-// max-flow (MCMF) implementation using C++.  If you have a C++ application in 
+// This is intended to be one of the cleanest and simplest to use minimum-cost
+// max-flow (MCMF) implementation using C++.  If you have a C++ application in
 // which you need to use a MCMF algo, then this may be your most elegant bet.
 // See main() function for an example of how to use it.
-// 
+//
 // This is an adapted (i.e., ported to C++) version of the faimous CS2 algo;
-// CS2 is the second version of scaling algorithm for minimum-cost max-flow 
+// CS2 is the second version of scaling algorithm for minimum-cost max-flow
 // problems.  For a detailed description of this famous algo, see:
-// A.V. Goldberg, "An Efficient Implementation of a Scaling Minimum-Cost 
+// A.V. Goldberg, "An Efficient Implementation of a Scaling Minimum-Cost
 // Flow Algorithm", Journal of Algorithms, Vol. 22, pp. 1-29, 1997.
+
+// small modification for a file input/output + python wrapper by
+// Harvey Devereux
+// h.devereux@warwick.ac.uk
 
 #ifndef _MCMF_H_
 #define _MCMF_H_
@@ -21,6 +25,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
+#include <fstream>
 
 using namespace std;
 
@@ -78,7 +83,7 @@ class MCMF_CS2
 	typedef long long int price_t;
 
 	class NODE;
-	
+
 	class ARC {
 	public:
 		long _rez_capacity; // residual capacity;
@@ -145,7 +150,7 @@ class MCMF_CS2
 		long rank() { return _rank; }
 		long inp() { return _inp; }
 	};
- 
+
 	class BUCKET {
 	private:
 		// 1st node with positive excess or simply 1st node in the buket;
@@ -186,13 +191,13 @@ class MCMF_CS2
 	double _cut_off; // the bound for suspending arcs
 	excess_t _total_excess; // total excess
 
-	// if = 1 - signal to start price-in ASAP - 
-	// maybe there is infeasibility because of susoended arcs 
+	// if = 1 - signal to start price-in ASAP -
+	// maybe there is infeasibility because of susoended arcs
 	int _flag_price;
-	// if = 1 - update failed some sources are unreachable: either the 
+	// if = 1 - update failed some sources are unreachable: either the
 	// problem is unfeasible or you have to return suspended arcs
 	int _flag_updt;
-	// maximal number of cycles cancelled during price refine 
+	// maximal number of cycles cancelled during price refine
 	int _snc_max;
 
 	// dummy variables;
@@ -301,7 +306,10 @@ class MCMF_CS2
 	void finishup( double *objective_cost);
 	void cs2( double *objective_cost);
 	int run_cs2();
-
+  // Harvey
+  int run_cs2(bool debug, bool write_ans, std::ofstream & out);
+  // Harvey
+  void solution(std::ofstream & out);
 	// shared utils;
 	void increase_flow( NODE *i, NODE *j, ARC *a, long df) {
 		i->dec_excess( df);
@@ -309,8 +317,8 @@ class MCMF_CS2
 		a->dec_rez_capacity( df);
 		a->sister()->inc_rez_capacity( df);
 	}
-	bool time_for_update() { 
-		return ( _n_rel > _n * UPDT_FREQ + _n_src * UPDT_FREQ_S); 
+	bool time_for_update() {
+		return ( _n_rel > _n * UPDT_FREQ + _n_src * UPDT_FREQ_S);
 	}
 	// utils for excess queue;
 	void reset_excess_q() {
@@ -391,7 +399,7 @@ class MCMF_CS2
 		if ( a != b) {
 			ARC *sa = a->sister();
 			ARC *sb = b->sister();
-			long d_cap;						
+			long d_cap;
 
 			_d_arc.set_rez_capacity( a->rez_capacity());
 			_d_arc.set_cost( a->cost());
@@ -405,16 +413,16 @@ class MCMF_CS2
 			b->set_cost( _d_arc.cost());
 			b->set_head( _d_arc.head());
 
-			if ( a != sb) {			
+			if ( a != sb) {
 				b->set_sister( sa);
 				a->set_sister( sb);
 				sa->set_sister( b);
 				sb->set_sister( a);
 			}
-						
+
 			d_cap = _cap[ a - _arcs];
 			_cap[ a - _arcs] = _cap[ b - _arcs];
-			_cap[ b - _arcs] = d_cap;	
+			_cap[ b - _arcs] = d_cap;
 		}
 	}
 };

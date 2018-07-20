@@ -93,7 +93,7 @@ void MCMF_CS2::allocate_arrays()
 }
 
 void MCMF_CS2::deallocate_arrays()
-{ 
+{
 	if ( _arcs) free ( _arcs );
 	if ( _dnode) delete _dnode;
 	if ( _cap) free ( _cap );
@@ -112,7 +112,7 @@ void MCMF_CS2::set_arc( long tail_node_id, long head_node_id,
 	// DIMACS format:
 	// c arc has <tail> <head> <capacity l.b.> <capacity u.b> <cost>
 
-	if ( tail_node_id < 0 || tail_node_id > _n || 
+	if ( tail_node_id < 0 || tail_node_id > _n ||
 		 head_node_id < 0 || head_node_id > _n ) {
 		printf("Error:  Arc with head or tail out of bounds inside CS2\n");
 		exit( 1);
@@ -127,7 +127,7 @@ void MCMF_CS2::set_arc( long tail_node_id, long head_node_id,
 	}
 
 	// no of arcs incident to node i is placed in _arc_first[i+1]
-	_arc_first[tail_node_id + 1] ++; 
+	_arc_first[tail_node_id + 1] ++;
 	_arc_first[head_node_id + 1] ++;
 	_i_node = _nodes + tail_node_id;
 	_j_node = _nodes + head_node_id;
@@ -183,7 +183,7 @@ void MCMF_CS2::pre_processing()
 	long last, arc_num, arc_new_num;;
 	long tail_node_id;
 	NODE *head_p;
-	ARC *arc_new, *arc_tmp;	
+	ARC *arc_new, *arc_tmp;
 	long up_bound;
 	price_t cost; // arc cost;
 	excess_t cap_out; // sum of outgoing capacities
@@ -193,12 +193,12 @@ void MCMF_CS2::pre_processing()
 		printf("Error:  Unbalanced problem inside CS2\n");
 		exit( 1);
 	}
-	
+
 	// first arc from the first node
 	( _nodes + _node_min )->set_first( _arcs );
 
 	// before below loop arc_first[i+1] is the number of arcs outgoing from i;
-	// after this loop arc_first[i] is the position of the first 
+	// after this loop arc_first[i] is the position of the first
 	// outgoing from node i arcs after they would be ordered;
 	// this value is transformed to pointer and written to node.first[i]
 	for ( i = _node_min + 1; i <= _node_max + 1; i ++ ) {
@@ -210,7 +210,7 @@ void MCMF_CS2::pre_processing()
 	for ( i = _node_min; i < _node_max; i ++ ) {
 
 		last = ( ( _nodes + i + 1 )->first() ) - _arcs;
-		// arcs outgoing from i must be cited    
+		// arcs outgoing from i must be cited
 		// from position arc_first[i] to the position
 		// equal to initial value of arc_first[i+1]-1
 
@@ -226,8 +226,8 @@ void MCMF_CS2::pre_processing()
 				arc_new_num = _arc_first[tail_node_id];
 				_arc_current = _arcs + arc_num;
 				arc_new = _arcs + arc_new_num;
-	    
-				// arc_current must be cited in the position arc_new    
+
+				// arc_current must be cited in the position arc_new
 				// swapping these arcs:
 
 				head_p = arc_new->head();
@@ -265,7 +265,7 @@ void MCMF_CS2::pre_processing()
 			}
 		}
 		// all arcs outgoing from  i  are in place
-	}       
+	}
 	// arcs are ordered by now!
 
 
@@ -273,11 +273,11 @@ void MCMF_CS2::pre_processing()
 	for ( NODE *ndp = _nodes + _node_min; ndp <= _nodes + _node_max; ndp ++ ) {
 		cap_in  =   ( ndp->excess() );
 		cap_out = - ( ndp->excess() );
-		for ( _arc_current = ndp->first(); _arc_current != (ndp+1)->first(); 
+		for ( _arc_current = ndp->first(); _arc_current != (ndp+1)->first();
 			  _arc_current ++ ) {
 			arc_num = _arc_current - _arcs;
 			if ( _cap[arc_num] > 0 ) cap_out += _cap[arc_num];
-			if ( _cap[arc_num] == 0 ) 
+			if ( _cap[arc_num] == 0 )
 				cap_in += _cap[ _arc_current->sister() - _arcs ];
 		}
 	}
@@ -291,13 +291,13 @@ void MCMF_CS2::pre_processing()
 	_nodes = _nodes + _node_min;
 
 	// () free internal memory, not needed anymore inside CS2;
-	free ( _arc_first ); 
+	free ( _arc_first );
 	free ( _arc_tail );
 }
 
 void MCMF_CS2::cs2_initialize()
 {
-	// initialization; 
+	// initialization;
 	// called after allocate_arrays() and all nodes and arcs have been inputed;
 
 	NODE *i; // current node
@@ -399,7 +399,7 @@ void MCMF_CS2::up_node_scan( NODE *i)
 	BUCKET *b_new; // new bucket for j
 	long i_rank;
 	long j_rank; // ranks of nodes
-	long j_new_rank;             
+	long j_new_rank;
 	price_t rc; // reduced cost of (j, i)
 	price_t dr; // rank difference
 
@@ -476,15 +476,15 @@ void MCMF_CS2::price_update()
 
 			if ( i ->excess() > 0 ) {
 				remain -= ( i->excess());
-				if ( remain <= 0 ) break; 
+				if ( remain <= 0 ) break;
 			}
 		}
-		if ( remain <= 0 ) break; 
+		if ( remain <= 0 ) break;
 	}
 
 	if ( remain > 0.5 ) _flag_updt = 1;
 
-	// finishup 
+	// finishup
 	// changing prices for nodes which were not scanned during main loop;
 	dp = ( b - _buckets ) * _epsilon;
 
@@ -496,7 +496,7 @@ void MCMF_CS2::price_update()
 			}
 			if ( i->price() > _price_min ) {
 				i->dec_price( dp);
-			}			
+			}
 		}
 	}
 }
@@ -517,7 +517,7 @@ int MCMF_CS2::relabel( NODE *i)
 
 	// 1/2 arcs are scanned;
 	for ( a = i->current() + 1, a_stop = (i + 1)->suspended(); a != a_stop; a ++ ) {
-		
+
 		if ( OPEN(a) && ( (dp = (a->head()->price() - a->cost())) > p_max ) ) {
 			if ( i_price < dp ) {
 				i->set_current( a);
@@ -544,7 +544,7 @@ int MCMF_CS2::relabel( NODE *i)
 	if ( p_max != _price_min ) {
 		i->set_price( p_max - _epsilon);
 		i->set_current( a_max);
-	} 
+	}
 	else { // node can't be relabelled;
 		if ( i->suspended() == i->first() ) {
 			if ( i->excess() == 0 ) {
@@ -578,7 +578,7 @@ void MCMF_CS2::discharge( NODE *i)
 	a = i->current();
 	j = a->head();
 
-	if ( !ADMISSIBLE( i, j, a ) ) { 
+	if ( !ADMISSIBLE( i, j, a ) ) {
 		relabel( i );
 		a = i->current();
 		j = a->head();
@@ -591,17 +591,17 @@ void MCMF_CS2::discharge( NODE *i)
 
 			df = MIN( i->excess(), a->rez_capacity() );
 			if ( j_exc == 0) _n_src++;
-			increase_flow( i, j, a, df ); // INCREASE_FLOW 
+			increase_flow( i, j, a, df ); // INCREASE_FLOW
 			_n_push ++;
 
 			if ( out_of_excess_q( j ) ) {
 				insert_to_excess_q( j );
 			}
-		} 
+		}
 		else { // j_exc < 0;
 
 			df = MIN( i->excess(), a->rez_capacity() );
-			increase_flow( i, j, a, df ); // INCREASE_FLOW 
+			increase_flow( i, j, a, df ); // INCREASE_FLOW
 			_n_push ++;
 
 			if ( j->excess() >= 0 ) {
@@ -616,7 +616,7 @@ void MCMF_CS2::discharge( NODE *i)
 				_total_excess -= df;
 			}
 		}
-  
+
 		if ( i->excess() <= 0) _n_src --;
 		if ( i->excess() <= 0 || _flag_price ) break;
 
@@ -663,21 +663,21 @@ int MCMF_CS2::price_in()
 				}
 				df = a->rez_capacity();
 				increase_flow( i, a->head(), a, df );
-	    
+
 				ra = a->sister();
 				j  = a->head();
-	    
+
 				i->dec_first();
 				b = i->first();
 				exchange( a, b );
-	    
+
 				if ( SUSPENDED( j, ra ) ) {
 					j->dec_first();
 					rb = j->first();
 					exchange( ra, rb );
 				}
-	    
-				n_in_bad ++; 
+
+				n_in_bad ++;
 			}
 			else {
 				if ( ( rc < _cut_on ) && ( rc > -_cut_on ) ) {
@@ -727,8 +727,8 @@ void MCMF_CS2::refine()
 	long np, nr, ns; // variables for additional print
 	int pr_in_int; // current number of updates between price_in
 
-	np = _n_push; 
-	nr = _n_relabel; 
+	np = _n_push;
+	nr = _n_relabel;
 	ns = _n_scan;
 
 	_n_refine ++;
@@ -746,7 +746,7 @@ void MCMF_CS2::refine()
 	for ( i = _nodes; i != _sentinel_node; i ++ ) {
 		i->set_current( i->first());
 		i_exc = i->excess();
-		if ( i_exc > 0 ) { // i  is a source 
+		if ( i_exc > 0 ) { // i  is a source
 			_total_excess += i_exc;
 			_n_src++;
 			insert_to_excess_q( i );
@@ -764,10 +764,10 @@ void MCMF_CS2::refine()
 				pr_in_int = 0;
 				price_in();
 			}
-	  
+
 			if ( empty_excess_q() ) break;
 		}
-		
+
 		REMOVE_FROM_EXCESS_Q( i );
 
 		// push all excess out of i
@@ -831,9 +831,9 @@ int MCMF_CS2::price_refine()
 	price_t rc = 0; // reduced cost of a
 	price_t dr; // ranks difference
 	price_t dp;
-	int cc;              
+	int cc;
 	// return code: 1 - flow is epsilon optimal
-	// 0 - refine is needed       
+	// 0 - refine is needed
 	long df; // cycle capacity
 	int nnc; // number of negative cycles cancelled during one iteration
 	int snc; // total number of negative cycle cancelled
@@ -848,7 +848,7 @@ int MCMF_CS2::price_refine()
 
 	// (1) main loop
 	// while negative cycle is found or eps-optimal solution is constructed
-	while ( 1 ) { 
+	while ( 1 ) {
 
 		nnc = 0;
 		for ( i = _nodes; i != _sentinel_node; i ++ ) {
@@ -863,7 +863,7 @@ int MCMF_CS2::price_refine()
 
 			i->set_b_next( NULL);
 
-			// deapth first search 
+			// deapth first search
 			while ( 1 ) {
 				i->set_inp( GREY);
 
@@ -872,7 +872,7 @@ int MCMF_CS2::price_refine()
 					if ( OPEN( a ) ) {
 						j = a->head();
 						if ( REDUCED_COST ( i, j, a ) < 0 ) {
-							if ( j->inp() == WHITE ) { // fresh node  - step forward 
+							if ( j->inp() == WHITE ) { // fresh node  - step forward
 								i->set_current( a);
 								j->set_b_next( i);
 								i = j;
@@ -881,7 +881,7 @@ int MCMF_CS2::price_refine()
 								break;
 							}
 
-							if ( j->inp() == GREY ) { // cycle detected 
+							if ( j->inp() == GREY ) { // cycle detected
 								cc = 0;
 								nnc ++;
 								i->set_current( a);
@@ -920,10 +920,10 @@ int MCMF_CS2::price_refine()
 						}
 						// if j-color is BLACK - continue search from i
 					}
-				} // all arcs from i are scanned 
+				} // all arcs from i are scanned
 
 				if ( a == a_stop ) {
-					// step back 
+					// step back
 					i->set_inp( BLACK);
 					_n_prscan1 ++;
 					j = i->b_next();
@@ -964,7 +964,7 @@ int MCMF_CS2::price_refine()
 						}
 					}
 				}
-			} // all arcs from i are scanned 
+			} // all arcs from i are scanned
 
 			if ( i_rank > 0 ) {
 				if ( i_rank > bmax ) bmax = i_rank;
@@ -1014,13 +1014,13 @@ int MCMF_CS2::price_refine()
 								}
 							}
 						}
-					} // end if opened arc 
+					} // end if opened arc
 				} // all arcs are scanned
 
 				i->dec_price( dp);
 
-			} // end of while-cycle: the bucket is scanned 
-		} // end of for-cycle: all buckets are scanned 
+			} // end of while-cycle: the bucket is scanned
+		} // end of for-cycle: all buckets are scanned
 
 		if ( cc == 0 ) break;
 
@@ -1031,7 +1031,7 @@ int MCMF_CS2::price_refine()
 	// (2) finish
 	// if refine needed - saturate non-epsilon-optimal arcs;
 
-	if ( cc == 0 ) { 
+	if ( cc == 0 ) {
 		for ( i = _nodes; i != _sentinel_node; i ++) {
 			for ( a = i->first(), a_stop = (i + 1)->suspended(); a != a_stop; a ++) {
 				if ( REDUCED_COST( i, a->head(), a ) < - _epsilon ) {
@@ -1102,11 +1102,11 @@ void MCMF_CS2::compute_prices()
 
 							if ( j->inp() == GREY ) { // cycle detected; should not happen
 								cc = 0;
-							}                     
+							}
 						}
 						// if j-color is BLACK - continue search from i
-					} 
-				} // all arcs from i are scanned 
+					}
+				} // all arcs from i are scanned
 
 				if ( a == a_stop ) {
 					// step back
@@ -1173,7 +1173,7 @@ void MCMF_CS2::compute_prices()
 						j_rank = j->rank();
 						if ( j_rank < i_rank ) {
 							rc = REDUCED_COST( i, j, a );
- 
+
 							if ( rc < 0 ) {
 								j_new_rank = i_rank;
 							} else {
@@ -1203,13 +1203,13 @@ void MCMF_CS2::compute_prices()
 		if ( cc == 0 ) break;
 
 	} // end of main loop
-} 
+}
 
 void MCMF_CS2::price_out()
 {
 	NODE *i; // current node
-	ARC *a; // current arc from i 
-	ARC *a_stop; // first arc from the next node 
+	ARC *a; // current arc from i
+	ARC *a_stop; // first arc from the next node
 	ARC *b; // arc to be exchanged with suspended
 	double n_cut_off; // -cut_off
 	double rc; // reduced cost
@@ -1219,7 +1219,7 @@ void MCMF_CS2::price_out()
 	for ( i = _nodes; i != _sentinel_node; i ++) {
 		for ( a = i->first(), a_stop = (i + 1)->suspended(); a != a_stop; a ++) {
 
-			rc = REDUCED_COST( i, a->head(), a );		
+			rc = REDUCED_COST( i, a->head(), a );
 			if ( ( rc > _cut_off && CLOSED(a->sister()) ) ||
 				 ( rc < n_cut_off && CLOSED(a) ) ) { // suspend the arc
 
@@ -1247,7 +1247,7 @@ int MCMF_CS2::check_feas()
 {
 	if ( _check_solution == false)
 		return ( 0);
-	
+
 	NODE *i;
 	ARC *a, *a_stop;
 	long fa;
@@ -1331,7 +1331,7 @@ void MCMF_CS2::cs_cost_reinit()
 {
 	if ( _cost_restart == false)
 		return;
-	
+
 	NODE *i; // current node
 	ARC *a;          // current arc
 	ARC *a_stop;
@@ -1351,7 +1351,7 @@ void MCMF_CS2::cs_cost_reinit()
 		i->set_q_next( _sentinel_node);
 	}
 
-	// make prices nonnegative and multiply 
+	// make prices nonnegative and multiply
 	for ( i = _nodes; i != _sentinel_node; i ++) {
 		i->set_price( (i->price() - rc) * _dn);
 	}
@@ -1364,7 +1364,7 @@ void MCMF_CS2::cs_cost_reinit()
 	sum = 0;
 	for ( i = _nodes; i != _sentinel_node; i ++) {
 		minc = 0;
-		for ( a = i->first(), a_stop = (i + 1)->suspended(); a != a_stop; a ++) {		
+		for ( a = i->first(), a_stop = (i + 1)->suspended(); a != a_stop; a ++) {
 			if ( (OPEN(a) && ((rc = REDUCED_COST(i, a->head(), a)) < 0)) )
 				minc = MAX( _epsilon, -rc);
 		}
@@ -1380,7 +1380,7 @@ void MCMF_CS2::cs_cost_reinit()
 	_n_ref = 0;
 
 	_n_refine = _n_discharge = _n_push = _n_relabel = 0;
-	_n_update = _n_scan = _n_prefine = _n_prscan = _n_prscan1 = 
+	_n_update = _n_scan = _n_prefine = _n_prscan = _n_prscan1 =
 		_n_bad_pricein = _n_bad_relabel = 0;
 
 	_flag_price = 0;
@@ -1401,24 +1401,24 @@ void MCMF_CS2::cs2_cost_restart( double *objective_cost)
 	printf("c ******************************\nc\n");
 
 	cs_cost_reinit();
-  
+
 	printf ("c Init. epsilon = %6.0f\n", _epsilon);
 	cc = update_epsilon();
-  
+
 	if (cc != 0) {
 		printf("c Old solution is optimal\n");
-	} 
+	}
 	else {
 		do { // scaling loop
 			while ( 1 ) {
-				if ( ! price_refine() ) 
+				if ( ! price_refine() )
 					break;
 
 				if ( _n_ref >= PRICE_OUT_START ) {
-					if ( price_in() ) 
+					if ( price_in() )
 						break;
 				}
-				if ((cc = update_epsilon ())) 
+				if ((cc = update_epsilon ()))
 					break;
 			}
 			if (cc) break;
@@ -1438,18 +1438,22 @@ void MCMF_CS2::print_solution()
 {
 	if ( _print_ans == false)
 		return;
-	
+
 	NODE *i;
 	ARC *a;
 	long ni;
 	price_t cost;
-	printf ("c\ns %.0l\n", cost );
+  // surely this is unitilialised? therefor an undefined
+	// operation?
+	//printf ("c\ns %.0l\n", cost );
 
 	for ( i = _nodes; i < _nodes + _n; i ++ ) {
 		ni = N_NODE( i );
 		for ( a = i->suspended(); a != (i+1)->suspended(); a ++) {
 			if ( _cap[ N_ARC (a) ]  > 0 ) {
-				printf("f %7ld %7ld %10ld\n", 
+				//std::cout << ni;
+				//std::cout << N_NODE(a->head());
+				printf("%7ld %7ld %10ld\n",
 					   ni, N_NODE(a->head()), _cap[ N_ARC(a) ] - a->rez_capacity());
 			}
 		}
@@ -1466,7 +1470,7 @@ void MCMF_CS2::print_solution()
 		}
 	}
 
-	printf("c\n");
+	//printf("c\n");
 }
 
 void MCMF_CS2::print_graph()
@@ -1531,7 +1535,7 @@ void MCMF_CS2::cs2( double *objective_cost)
 	// the main calling function;
 	int cc = 0; // for storing return code;
 
-  
+
 	// (1) update epsilon first;
 	update_epsilon();
 
@@ -1543,15 +1547,15 @@ void MCMF_CS2::cs2( double *objective_cost)
 		if ( _n_ref >= PRICE_OUT_START )
 			price_out();
 
-		if ( update_epsilon() ) 
+		if ( update_epsilon() )
 			break;
 
 		while (1) {
-			if ( ! price_refine() ) 
+			if ( ! price_refine() )
 				break;
 
 			if ( _n_ref >= PRICE_OUT_START ) {
-				if ( price_in() ) break; 
+				if ( price_in() ) break;
 				if ( (cc = update_epsilon()) ) break;
 			}
 		}
@@ -1621,11 +1625,11 @@ int MCMF_CS2::run_cs2()
 	printf("c scale-factor: %f  cut-off-factor: %f\nc\n",
 		   _f_scale, _cut_off_factor);
 
-	
+
 	// (6) run CS2;
 	cs2( &objective_cost );
 	double t = 0.0;
-  
+
 	printf("c time:         %15.2f    cost:       %15.0f\n", t, objective_cost);
 	printf("c refines:      %10ld     discharges: %10ld\n", _n_refine, _n_discharge);
 	printf("c pushes:       %10ld     relabels:   %10ld\n", _n_push, _n_relabel);
@@ -1633,11 +1637,11 @@ int MCMF_CS2::run_cs2()
 	printf("c p-refines:    %10ld     r-scans:    %10ld\n", _n_prefine, _n_prscan);
 	printf("c dfs-scans:    %10ld     bad-in:     %4ld  + %2ld\n",
 		   _n_prscan1, _n_bad_pricein, _n_bad_relabel);
-  
+
 
 	// () CHECK_SOLUTION?
 	if ( _check_solution == true ) {
-		printf("c checking feasibility...\n"); 
+		printf("c checking feasibility...\n");
 		if ( check_feas() )
 			printf("c ...OK\n");
 		else
@@ -1660,47 +1664,94 @@ int MCMF_CS2::run_cs2()
 	return 0;
 }
 
-
-////////////////////////////////////////////////////////////////////////////////
-//
-// main
-//
-////////////////////////////////////////////////////////////////////////////////
-
-int main( int argc, char *argv[])
+//////////////////////// By Harvey ////////////////////////
+////////////////////////////////////////////////////////////////
+int MCMF_CS2::run_cs2(bool debug, bool write_ans, std::ofstream & out)
 {
-	//"p min 6 8
-	//c min-cost flow problem with 6 nodes and 8 arcs
-	//n 1 10
-	//c supply of 10 at node 1
-	//n 6 -10
-	//c demand of 10 at node 6
-	//c arc list follows
-	//c arc has <tail> <head> <capacity l.b.> <capacity u.b> <cost>
-	//a 1 2 0 4 1
-	//a 1 3 0 8 5
-	//a 2 3 0 5 0
-	//a 3 5 0 10 1
-	//a 5 4 0 8 0
-	//a 5 6 0 8 9
-	//a 4 2 0 8 1
-	//a 4 6 0 8 1"
-	int num_nodes = 6;
-	int num_arcs = 8;
-	MCMF_CS2 my_mcmf_problem( num_nodes, num_arcs);
+  // see mcmf.cpp for the original version of this function
+  // that I have adapted
 
-	my_mcmf_problem.set_arc( 1, 2, 0, 4, 1);
-	my_mcmf_problem.set_arc( 1, 3, 0, 8, 5);
-	my_mcmf_problem.set_arc( 2, 3, 0, 5, 0);
-	my_mcmf_problem.set_arc( 3, 5, 0, 10, 1);
-	my_mcmf_problem.set_arc( 5, 4, 0, 8, 0);
-	my_mcmf_problem.set_arc( 5, 6, 0, 8, 9);
-	my_mcmf_problem.set_arc( 4, 2, 0, 8, 1);
-	my_mcmf_problem.set_arc( 4, 6, 0, 8, 1);
-	my_mcmf_problem.set_supply_demand_of_node( 1, 10);
-	my_mcmf_problem.set_supply_demand_of_node( 6, -10);
+	double objective_cost;
 
-	my_mcmf_problem.run_cs2();
+	pre_processing();
 
+	if ( _check_solution == true) {
+		_node_balance = (long long int *) calloc (_n+1, sizeof(long long int));
+		for ( NODE *i = _nodes; i < _nodes + _n; i ++ ) {
+			_node_balance[i - _nodes] = i->excess();
+		}
+	}
+
+	_m = 2 * _m;
+	cs2_initialize(); // works already with 2*m;
+
+  cs2( &objective_cost );
+  double t = 0.0;
+
+  if (debug == 1){
+    print_graph(); // exit(1); // debug;
+
+  	printf("\nc CS 4.3\n");
+  	printf("c nodes: %ld  arcs: %ld\n", _n, _m/2 );
+  	printf("c scale-factor: %f  cut-off-factor: %f\nc\n",
+  		   _f_scale, _cut_off_factor);
+
+  	printf("c time:         %15.2f    cost:       %15.0f\n", t, objective_cost);
+  	printf("c refines:      %10ld     discharges: %10ld\n", _n_refine, _n_discharge);
+  	printf("c pushes:       %10ld     relabels:   %10ld\n", _n_push, _n_relabel);
+  	printf("c updates:      %10ld     u-scans:    %10ld\n", _n_update, _n_scan);
+  	printf("c p-refines:    %10ld     r-scans:    %10ld\n", _n_prefine, _n_prscan);
+  	printf("c dfs-scans:    %10ld     bad-in:     %4ld  + %2ld\n",
+  		   _n_prscan1, _n_bad_pricein, _n_bad_relabel);
+  }
+
+
+	// () CHECK_SOLUTION?
+	if ( _check_solution == true ) {
+		printf("c checking feasibility...\n");
+		if ( check_feas() )
+			printf("c ...OK\n");
+		else
+			printf("c ERROR: solution infeasible\n");
+		printf("c computing prices and checking CS...\n");
+		compute_prices();
+		if ( check_cs() )
+			printf("c ...OK\n");
+		else
+			printf("ERROR: CS violation\n");
+	}
+
+	// () PRINT_ANS?
+	if ( write_ans == true ) {
+    out << objective_cost << std::endl;
+		solution(out);
+	}
+
+
+	// () cleanup;
+	deallocate_arrays();
 	return 0;
+}
+
+void MCMF_CS2::solution(std::ofstream & out)
+{
+	NODE *i;
+	ARC *a;
+	long ni;
+	price_t cost;
+  // surely this is unitilialised? therefor an undefined
+	// operation?
+	// printf ("c\ns %.0l\n", cost );
+
+	for ( i = _nodes; i < _nodes + _n; i ++ ) {
+		ni = N_NODE( i );
+		for ( a = i->suspended(); a != (i+1)->suspended(); a ++) {
+			if ( _cap[ N_ARC (a) ]  > 0 ) {
+				out << ni << " ";
+				out << N_NODE(a->head()) << " ";
+				out << _cap[ N_ARC(a) ] - a->rez_capacity() << " ";
+				out << std::endl;
+			}
+		}
+    }
 }
