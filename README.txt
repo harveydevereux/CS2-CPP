@@ -1,9 +1,10 @@
-This is a small modification to the C++ implementation of CS2 min-cost-flow
+This is a modification to the C++ implementation of CS2 min-cost-flow
 scaling algorithm see CREDITS for full details.
 
-The main addition is reading a certain file structure and outputing the
-cost and flow to a file. A python interface to networkx with boost is
-soon to follow.
+The main additions are reading a certain file structure into the algorithm and outputing the
+cost and flow to a file. 
+
+A python interface to networkx with boost is soon to follow.
 
               Original README.txt below (Cristinel Ababei)
 
