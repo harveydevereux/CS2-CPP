@@ -50,16 +50,16 @@ using namespace std;
 			}													\
 	}
 
-
-void MCMF_CS2::err_end( int cc)
-{
-	// abnormal finish
-	printf ("\nError %d\n", cc );
-	// 2 - problem is unfeasible
-	// 5 - allocation fault
-	// 6 - price overflow
-	exit( cc);
-}
+// better version below
+// void MCMF_CS2::err_end( int cc)
+// {
+// 	// abnormal finish
+// 	printf ("\nError %d\n", cc );
+// 	// 2 - problem is unfeasible
+// 	// 5 - allocation fault
+// 	// 6 - price overflow
+// 	exit( cc);
+// }
 
 void MCMF_CS2::allocate_arrays()
 {
@@ -1658,20 +1658,49 @@ int MCMF_CS2::run_cs2()
 	if ( _print_ans == true ) {
 		print_solution();
 	}
-
 	// () cleanup;
 	deallocate_arrays();
 	return 0;
 }
 
+
+
+
+
+
 //////////////////////// By Harvey ////////////////////////
 ////////////////////////////////////////////////////////////////
+
+
+
+
+// better errors
+void MCMF_CS2::err_end( int cc)
+{
+	// abnormal finish
+	switch (cc){
+		case 2 : std::cout << "Error: problem is unfeasible\n";
+						 break;
+		case 5 : std::cout << "Error: allocation fault\n";
+		         break;
+		case 6 : std::cout << "Error: price overflow\n";
+						 break;
+	}
+	// 2 - problem is unfeasible
+	// 5 - allocation fault
+	// 6 - price overflow
+	exit(cc);
+}
+
+
+
 int MCMF_CS2::run_cs2(bool debug, bool write_ans, std::ofstream & out)
 {
   // see mcmf.cpp for the original version of this function
   // that I have adapted
 
 	double objective_cost;
+
 
 	pre_processing();
 

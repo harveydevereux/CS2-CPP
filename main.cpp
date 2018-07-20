@@ -56,7 +56,7 @@ int Characters(std::string & str){
   return count;
 }
 
-void ReadData(std::string & str, MCMF_CS2 & mcmf){
+std::vector<int> ReadData(std::string & str, MCMF_CS2 & mcmf){
   bool arc;
   std::vector<int> values;
   if (Characters(str) == 2){
@@ -82,12 +82,15 @@ void ReadData(std::string & str, MCMF_CS2 & mcmf){
   else{
     mcmf.set_supply_demand_of_node(values[0], values[1]);
   }
+  return values;
 }
 
-MCMF_CS2 ProblemFromFile(MCMF_CS2 & mcmf, std::ifstream & file){
+std::vector<int> ProblemFromFile(MCMF_CS2 & mcmf, std::ifstream & file){
   // takes an empty MCMF_CS2 object e.g MCMF_CS2 mcmf(0,0);
   // and a file of the form example_problem.in
   std::string line;
+  // source and sink id
+  std::vector<int> values = {0,0};
 
   bool ReadNodeNumber = 0;
   if (file.is_open()){
@@ -102,27 +105,51 @@ MCMF_CS2 ProblemFromFile(MCMF_CS2 & mcmf, std::ifstream & file){
             ReadNodeNumber = 1;
           }
           else{
-            ReadData(line, mcmf);
+            std::vector<int> vec = ReadData(line, mcmf);
+            if (vec.size() == 2){
+              if (vec[1] > 0){
+                values[0] = vec[0];
+              }
+              else{
+                values[1] = vec[0];
+              }
+            }
           }
         }
       }
     }
     file.close();
-    return mcmf;
+    return values;
   }
   else{
     std::cout << "File read error\n";
-    return mcmf;
+    return values;
   }
 }
 
-int main() {
+int main(int argc, char ** argv) {
+  std::string filename;
+  if (argc >= 2){
+    filename = argv[1];
+  }
+  else{
+    filename = "example_problem.in";
+  }
   std:ifstream file;
-  file.open("example_problem.in");
-
+  file.open(filename);
   MCMF_CS2 mcmf(0,0);
-  mcmf = ProblemFromFile(mcmf, file);
+  std::vector<int> source_sink = ProblemFromFile(mcmf, file);
   std::ofstream out;
   out.open("mcmf.out");
-  mcmf.run_cs2(true,true,out);
+  //mcmf.run_cs2(true,true,out);
+  // termination is when the problem is
+  // unfeasible which cause the whole program to exit
+  int flow = 10;
+  std::cout << source_sink[0] << " " << source_sink[1];
+  while (true){
+    //mcmf.set_supply_demand_of_node(source_sink[0], flow);
+    //mcmf.set_supply_demand_of_node(source_sink[1],-1*flow);
+    mcmf.run_cs2(false,false,out);
+    flow += 10;
+  }
 }
