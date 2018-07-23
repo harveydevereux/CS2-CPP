@@ -1694,7 +1694,7 @@ void MCMF_CS2::err_end( int cc)
 
 
 
-int MCMF_CS2::run_cs2(bool debug, bool write_ans, std::ofstream & out)
+int MCMF_CS2::run_cs2(bool debug, bool write_ans, std::ofstream & out, int current_min = 10000000)
 {
   // see mcmf.cpp for the original version of this function
   // that I have adapted
@@ -1753,7 +1753,9 @@ int MCMF_CS2::run_cs2(bool debug, bool write_ans, std::ofstream & out)
 	// () PRINT_ANS?
 	if ( write_ans == true ) {
     out << objective_cost << std::endl;
-		solution(out);
+		if (objective_cost <= current_min){
+			solution(out);
+		}
 	}
 
 

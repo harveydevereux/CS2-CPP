@@ -307,7 +307,7 @@ class MCMF_CS2
 	void cs2( double *objective_cost);
 	int run_cs2();
   // Harvey
-  int run_cs2(bool debug, bool write_ans, std::ofstream & out);
+  int run_cs2(bool debug, bool write_ans, std::ofstream & out, int current_min);
   // Harvey
   void solution(std::ofstream & out);
 	// shared utils;

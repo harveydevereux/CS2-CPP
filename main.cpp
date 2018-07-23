@@ -1,3 +1,7 @@
+// TODO create an object to provide the
+//      file input/output interface
+//      MCMFProblem?
+
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -133,23 +137,38 @@ int main(int argc, char ** argv) {
     filename = argv[1];
   }
   else{
-    filename = "example_problem.in";
+    filename = "mcmf.in";
+  }
+  int flow_step;
+  if ( argc >= 3){
+    flow_step = std::stoi(argv[2]);
+  }
+  else{
+    flow_step = 10;
   }
   std:ifstream file;
   file.open(filename);
   MCMF_CS2 mcmf(0,0);
+  MCMF_CS2 temp(0,0);
+  MCMF_CS2 t(0,0);
   std::vector<int> source_sink = ProblemFromFile(mcmf, file);
+  file.open(filename);
+  ProblemFromFile(temp, file);
   std::ofstream out;
   out.open("mcmf.out");
   //mcmf.run_cs2(true,true,out);
   // termination is when the problem is
   // unfeasible which cause the whole program to exit
+  int min_cost = 1000000;
   int flow = 10;
-  std::cout << source_sink[0] << " " << source_sink[1];
-  while (true){
-    //mcmf.set_supply_demand_of_node(source_sink[0], flow);
-    //mcmf.set_supply_demand_of_node(source_sink[1],-1*flow);
-    mcmf.run_cs2(false,false,out);
-    flow += 10;
+  while(true){
+    mcmf.set_supply_demand_of_node(source_sink[0], flow);
+    mcmf.set_supply_demand_of_node(source_sink[1], -flow);
+    mcmf.run_cs2(false,true,out,min_cost);
+    file.open(filename);
+    ProblemFromFile(mcmf, file);
+    out.open("mcmf.out");
+    flow += flow_step;
+    std::cout << flow << std::endl;
   }
 }
