@@ -6,7 +6,13 @@ cost and flow to a file.
 
 A python interface to networkx with boost is soon to follow.
 
-              Original README.txt below (Cristinel Ababei)
+Harvey Devereux
+July 2018
+h.devereux@warwick.ac.uk
+
+ ################################################
+## Original README.txt below (Cristinel Ababei) ##
+ ################################################
 
 Cristinel Ababei
 January 2009, Fargo ND
