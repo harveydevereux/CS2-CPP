@@ -1,5 +1,7 @@
 #include "mcmf.h"
 #include <string.h>
+#include <iostream>
+#include <stdexcept>
 
 using namespace std;
 
@@ -1675,7 +1677,7 @@ int MCMF_CS2::run_cs2()
 
 
 // better errors
-void MCMF_CS2::err_end( int cc)
+void MCMF_CS2::err_end(int cc)
 {
 	// abnormal finish
 	switch (cc){
@@ -1689,12 +1691,12 @@ void MCMF_CS2::err_end( int cc)
 	// 2 - problem is unfeasible
 	// 5 - allocation fault
 	// 6 - price overflow
-	exit(cc);
+	throw std::runtime_error("Terminating\n");
 }
 
 
 
-int MCMF_CS2::run_cs2(bool debug, bool write_ans, std::ofstream & out, int current_min = 10000000)
+int MCMF_CS2::run_cs2(bool debug, bool write_ans, std::ofstream & out, int & current_min)
 {
   // see mcmf.cpp for the original version of this function
   // that I have adapted
@@ -1703,7 +1705,6 @@ int MCMF_CS2::run_cs2(bool debug, bool write_ans, std::ofstream & out, int curre
 
 
 	pre_processing();
-
 	if ( _check_solution == true) {
 		_node_balance = (long long int *) calloc (_n+1, sizeof(long long int));
 		for ( NODE *i = _nodes; i < _nodes + _n; i ++ ) {
@@ -1749,11 +1750,12 @@ int MCMF_CS2::run_cs2(bool debug, bool write_ans, std::ofstream & out, int curre
 		else
 			printf("ERROR: CS violation\n");
 	}
-
 	// () PRINT_ANS?
 	if ( write_ans == true ) {
-    out << objective_cost << std::endl;
+    //std::cout << objective_cost << std::endl;
 		if (objective_cost <= current_min){
+			current_min = objective_cost;
+			out << objective_cost << std::endl;
 			solution(out);
 		}
 	}
@@ -1785,4 +1787,37 @@ void MCMF_CS2::solution(std::ofstream & out)
 			}
 		}
     }
+}
+
+int MCMF_CS2::run_cs2_python(int & current_min)
+{
+  // see mcmf.cpp for the original version of this function
+  // that I have adapted
+
+	double objective_cost;
+
+
+	pre_processing();
+	if ( _check_solution == true) {
+		_node_balance = (long long int *) calloc (_n+1, sizeof(long long int));
+		for ( NODE *i = _nodes; i < _nodes + _n; i ++ ) {
+			_node_balance[i - _nodes] = i->excess();
+		}
+	}
+
+	_m = 2 * _m;
+	cs2_initialize(); // works already with 2*m;
+
+  cs2( &objective_cost );
+  double t = 0.0;
+
+	if (objective_cost <= current_min){
+		current_min = objective_cost;
+		return 1;
+	}
+
+
+	// () cleanup;
+	deallocate_arrays();
+	return 0;
 }

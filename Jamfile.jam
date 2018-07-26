@@ -1,0 +1,18 @@
+import python ;
+
+lib boost_numpy
+  :
+  : <search>/usr/local/lib
+    <include>/usr/local/include
+    ;
+
+project mcmf_ext
+  : requirements
+    #<include>/usr/local/include
+    <library>/usr/local/lib/libboost_numpy27.so.1.67.0
+    <library>/usr/local/lib/libboost_python27.so.1.67.0
+    <location>.
+    ;
+
+python-extension mcmf_ext : main.cpp boost_numpy ;
+#run-test test_array_ext : array_ext test_array_ext.py ;

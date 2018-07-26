@@ -1,0 +1,4 @@
+BOOST_ROOT = /usr/local/boost_1_67_0/ ;
+BOOST_BUILD = [ MATCH --boost-build=(.*) : $(ARGV) ] ;
+BOOST_BUILD ?= /usr/local/boost_1_67_0/tools/build/src ;
+boost-build $(BOOST_BUILD) ;

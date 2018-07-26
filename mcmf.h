@@ -18,6 +18,14 @@
 // Harvey Devereux
 // h.devereux@warwick.ac.uk
 
+#include <boost/python/module.hpp>
+#include <boost/python/def.hpp>
+#include <boost/python/class.hpp>
+#include <boost/python/numpy.hpp>
+
+namespace p = boost::python;
+namespace np = boost::python::numpy;
+
 #ifndef _MCMF_H_
 #define _MCMF_H_
 
@@ -307,8 +315,9 @@ class MCMF_CS2
 	void cs2( double *objective_cost);
 	int run_cs2();
   // Harvey
-  int run_cs2(bool debug, bool write_ans, std::ofstream & out, int current_min);
-  // Harvey
+  int run_cs2(bool debug, bool write_ans, std::ofstream & out, int & current_min);
+  int run_cs2_python(int & current_min);
+  np::ndarray python_solution(int edges);
   void solution(std::ofstream & out);
 	// shared utils;
 	void increase_flow( NODE *i, NODE *j, ARC *a, long df) {
