@@ -12,8 +12,11 @@ very significant speed up.
 
 ## More details on what this achieves
 
-The main goal is to implement algorithm 2 (post graph construction part) of [1] this is contained in the mcmf_ext.MCMFProblem.PythonTrajectories() method of the pytohn module. Look at the benchmarks
-to see why it is useful to create a Boost.Python module for this instead of using raw python.
+The main goal is to implement algorithm 2 (post graph construction part) of [1] this is contained in the mcmf_ext.MCMFProblem.PythonTrajectories() method of the python module. 
+
+Look at the benchmarks to see why it is useful to create a Boost.Python module for this instead of using raw python.
+
+I am using this to (attempt to) reconstruct unique trajectories from a data set of [beetle movement](https://github.com/harveydevereux/MSc-Project)
 
 ## Benchmark 
 
@@ -22,6 +25,8 @@ to see why it is useful to create a Boost.Python module for this instead of usin
 **Note** the C++ code was improved between the *C++* and *Python with C++ (Boost.Python)* benchmarks 
 so the increase in speed in the python module is likely caused by an increase in the
 new C++ code.
+
+What Beetles? see [My MSc Project](https://github.com/harveydevereux/MSc-Project)
 
 ## TODO
 
