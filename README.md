@@ -1,6 +1,6 @@
 ## Summary 
 
-This is a modification to the C++ implementation of CS2 min-cost-flow
+This is a python module based on a modification of a C++ implementation of CS2 min-cost-flow
 scaling algorithm see CREDITS for full details.
 
 The main additions are reading a certain file structure into the algorithm and outputing the
