@@ -1,3 +1,6 @@
+import sys
+sys.path.insert(0, '../../src/Python')
+import Methods
 from mcmf_ext import *
 import numpy as np
 

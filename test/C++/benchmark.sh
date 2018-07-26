@@ -31,7 +31,7 @@ while [ $COUNT -lt $N ]; do
   TIC=$(date +%s.%N)
   MEMORY_A[$COUNT]=$(free -m | awk 'NR==2{printf "%s \n", $3,$2,$3*100/$2}')
   # put in the command to time
-  ./mcmf mcmf$FRAMES[$COUNT].in
+  ../src/mcmf mcmf$FRAMES[$COUNT].in
   TOC=$(date +%s.%N)
   MEMORY_B[$COUNT]=$(free -m | awk 'NR==2{printf "%s \n", $3,$2,$3*100/$2}')
   TIMES[$COUNT]=$(echo $TOC-$TIC | bc)

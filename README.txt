@@ -1,10 +1,43 @@
+## Summary 
+
 This is a modification to the C++ implementation of CS2 min-cost-flow
 scaling algorithm see CREDITS for full details.
 
 The main additions are reading a certain file structure into the algorithm and outputing the
-cost and flow to a file. 
+cost and flow to a file, this is all wrapped into an MCMFProblem object which includes 
+code to compile a Boost.Python module.
 
-A python interface to networkx with boost is soon to follow.
+Currently the python module can perform [networkx.network_simplex](https://networkx.github.io/documentation/networkx-1.10/reference/generated/networkx.algorithms.flow.network_simplex.html) with a
+very significant speed up.
+
+## More details on what this achieves
+
+The main goal is to implement algorithm 2 (post graph construction part) of [1] this is contained in the mcmf_ext.MCMFProblem.PythonTrajectories() method of the pytohn module. Look at the benchmarks
+to see why it is useful to create a Boost.Python module for this instead of using raw python.
+
+## Benchmark 
+
+![speed](resources/boost_success.png)
+
+**Note** the C++ code was improved between the *C++* and *Python with C++ (Boost.Python)* benchmarks 
+so the increase in speed in the python module is likely caused by an increase in the
+new C++ code.
+
+## TODO
+
+Re-organise the C++ code so the Boost.Python is optional
+
+Finish the python module functionality
+- Offer just the min cost algorithm
+- Complete mirror of networkx.network_simplex input/output
+- Create distributeable?
+- Offer interface with Keras for learning costs? [2]
+
+### References 
+
+[[1] Global data association for multi-object tracking using network flows, Li Zhang et al, 2008](https://ieeexplore.ieee.org/document/4587584/)
+
+[[2] Deep Network Flow for Multi-Object Tracking, Samuel Schulter et al, 2017](https://arxiv.org/abs/1706.08482)
 
 Harvey Devereux
 July 2018
