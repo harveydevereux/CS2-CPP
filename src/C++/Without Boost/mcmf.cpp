@@ -168,7 +168,6 @@ void MCMF_CS2::set_arc( long tail_node_id, long head_node_id,
 void MCMF_CS2::set_supply_demand_of_node( long id, long excess)
 {
 	// set supply and demand of nodes; not used for transhipment nodes;
-	//std::cout << id << " " << _n << std::endl;
 	if ( id < 0 || id > _n ) {
 		printf("Error:  Unbalanced problem inside CS2\n");
 		exit( 1);
@@ -520,12 +519,7 @@ int MCMF_CS2::relabel( NODE *i)
 
 	// 1/2 arcs are scanned;
 	for ( a = i->current() + 1, a_stop = (i + 1)->suspended(); a != a_stop; a ++ ) {
-			// SEGFAULT  in a->head()->price() with flow 4970 and file 16210.in
-					if (a->head()->price()== NULL){
-						// ?? HOLY SHIT WHY!
-						// ONLY A PROBLEM WITH BOOST??
-						a->head()->set_price(1);
-					}
+		
 		if ( OPEN(a) && ( (dp = (a->head()->price() - a->cost())) > p_max ) ) {
 			if ( i_price < dp ) {
 				i->set_current( a);
@@ -538,12 +532,6 @@ int MCMF_CS2::relabel( NODE *i)
 
 	// 2/2 arcs are scanned;
 	for ( a = i->first(), a_stop = i->current() + 1; a != a_stop; a ++ ) {
-// SEGFAULT  in a->head()->price() with flow 4970 and file 16210.in
-		if (a->head()->price()== NULL){
-			// ?? HOLY SHIT WHY!
-			// ONLY A PROBLEM WITH BOOST??
-			a->head()->set_price(1);
-		}
 		if ( OPEN( a) && ( (dp = (a->head()->price() - a->cost())) > p_max ) ) {
 			if ( i_price < dp ) {
 				i->set_current( a);
@@ -754,6 +742,7 @@ void MCMF_CS2::refine()
 	_total_excess = 0;
 	_n_src = 0;
 	reset_excess_q();
+
 	_time_for_price_in = TIME_FOR_PRICE_IN1;
 
 	for ( i = _nodes; i != _sentinel_node; i ++ ) {
@@ -765,18 +754,20 @@ void MCMF_CS2::refine()
 			insert_to_excess_q( i );
 		}
 	}
-
 	if ( _total_excess <= 0 ) return;
+
 	// (2) main loop
+	// SEGFAULT
 	while ( 1 ) {
+
 		if ( empty_excess_q() ) {
 			if ( _n_ref > PRICE_OUT_START ) {
 				pr_in_int = 0;
 				price_in();
 			}
+
 			if ( empty_excess_q() ) break;
 		}
-
 		REMOVE_FROM_EXCESS_Q( i );
 
 		// push all excess out of i
@@ -817,6 +808,7 @@ void MCMF_CS2::refine()
 			}
 		}
 	}
+
 	return;
 }
 
@@ -852,7 +844,6 @@ int MCMF_CS2::price_refine()
 	snc = 0;
 
 	_snc_max = ( _n_ref >= START_CYCLE_CANCEL) ? MAX_CYCLES_CANCELLED : 0;
-
 
 	// (1) main loop
 	// while negative cycle is found or eps-optimal solution is constructed
@@ -1546,13 +1537,19 @@ void MCMF_CS2::cs2( double *objective_cost)
 
 	// (1) update epsilon first;
 	update_epsilon();
+
 	// (2) scaling loop;
 	do {
+		//std::cout << cc << std::endl;
+		//std::cout << "Done" << std::endl;
 		refine();
+
 		if ( _n_ref >= PRICE_OUT_START )
 			price_out();
+
 		if ( update_epsilon() )
 			break;
+
 		while (1) {
 			if ( ! price_refine() )
 				break;
@@ -1561,6 +1558,7 @@ void MCMF_CS2::cs2( double *objective_cost)
 				if ( (cc = update_epsilon()) ) break;
 			}
 		}
+						//std::cout << "Done" << std::endl;
 	} while ( cc == 0 );
 	// (3) finishup;
 	finishup( objective_cost );
@@ -1785,36 +1783,4 @@ void MCMF_CS2::solution(std::ofstream & out)
 		}
     }
 	out.close();
-}
-
-int MCMF_CS2::run_cs2_python(int & current_min)
-{
-  // see mcmf.cpp for the original version of this function
-  // that I have adapted
-
-	double objective_cost;
-
-
-	pre_processing();
-	if ( _check_solution == true) {
-		_node_balance = (long long int *) calloc (_n+1, sizeof(long long int));
-		for ( NODE *i = _nodes; i < _nodes + _n; i ++ ) {
-			_node_balance[i - _nodes] = i->excess();
-		}
-	}
-	_m = 2 * _m;
-	cs2_initialize(); // works already with 2*m;
-
-  cs2( &objective_cost );
-  double t = 0.0;
-	if (objective_cost < current_min){
-		//std::cout << objective_cost << std::endl;
-		current_min = objective_cost;
-		return 1;
-	}
-
-
-	// () cleanup;
-	deallocate_arrays();
-	return 0;
 }

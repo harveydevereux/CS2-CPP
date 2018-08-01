@@ -16,5 +16,6 @@ int main(int argc, char ** argv) {
     flow_step = 10;
   }
   MCMFProblem P(0,0);
-  P.TrajectoryAlgorithm(filename, "mcmf.out", 10);
+  std::string out = "mcmf.out";
+  P.TrajectoryAlgorithm(filename, out, 10);
 }

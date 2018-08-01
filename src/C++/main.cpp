@@ -94,12 +94,13 @@ std::vector<int> ReadData(std::string & str, MCMF_CS2 & mcmf){
   return values;
 }
 
-std::vector<int> ProblemFromFile(MCMF_CS2 & mcmf, std::ifstream & file){
+std::vector< std::vector<int> > ProblemFromFile(MCMF_CS2 & mcmf, std::ifstream & file){
   // takes an empty MCMF_CS2 object e.g MCMF_CS2 mcmf(0,0);
   // and a file of the form example_problem.in
   std::string line;
   // source and sink id
-  std::vector<int> values = {0,0};
+  std::vector<int> values = {0,0,-1,-1,-1};
+  std::vector< std::vector<int> > returns;
 
   bool ReadNodeNumber = 0;
   if (file.is_open()){
@@ -122,17 +123,21 @@ std::vector<int> ProblemFromFile(MCMF_CS2 & mcmf, std::ifstream & file){
               else{
                 values[1] = vec[0];
               }
+              returns.insert(returns.begin(),values);
+            }
+            else{
+              returns.push_back(vec);
             }
           }
         }
       }
     }
     file.close();
-    return values;
+    return returns;
   }
   else{
     std::cout << "File read error\n";
-    return values;
+    return returns;
   }
 }
 
@@ -161,9 +166,7 @@ public:
   MCMFProblem()
     : mcmf(0,0), min_cost(1000000), flow(10)
     {}
-  void LoadFromFile(std::ifstream & file){
-    this->source_sink_id = ProblemFromFile(this->mcmf,file);
-  }
+  void ReadFile(const std::string & filename);
   void SetFlow(int & flow){
     if (source_sink_id[0] > 0 && source_sink_id[1] > 0){
       this->mcmf.set_supply_demand_of_node(source_sink_id[0], flow);
@@ -174,17 +177,27 @@ public:
       std::cout << "Or node label 0 is invalid start with 1";
     }
   }
-  int Solve(bool debug, bool write_ans, std::ofstream & out, int min_cost){
+  int Solve(bool debug, bool write_ans, std::string & out, int & min_cost){
     return this->mcmf.run_cs2(debug, write_ans, out, min_cost);
   }
   int Solve(int & current_min){
     return this->mcmf.run_cs2_python(current_min);
   }
   void TrajectoryAlgorithm(std::string & in, std::string & out, int flow_step = 10);
-  np::ndarray PythonTrajectories(int flow_step);
+  np::ndarray PythonTrajectories(int flow_step, int print_status_every);
 
 protected:
   //std::vector<int> ReadData(std::string & line);
+  void LoadFromFile(std::ifstream & file){
+    std::vector< std::vector<int> > data = ProblemFromFile(this->mcmf,file);
+    this->nodes = this->mcmf._n;
+    this->edges = this->mcmf._m;
+    this->source_sink_id[0] = data[0][0];
+    this->source_sink_id[1] = data[0][1];
+    data.erase(data.begin());
+    data.erase(data.begin());
+    this->Arcs = data;
+  }
   std::vector< std::vector<int> > Arcs;
   void GetArcs(np::ndarray & py_arcs);
   std::vector<int> source_sink_id = {0,0};
@@ -211,21 +224,19 @@ void MCMFProblem::TrajectoryAlgorithm(std::string & in,std::string & out, int fl
   std::ifstream file;
   file.open(in);
   LoadFromFile(file);
-  std::ofstream out_file;
-  out_file.open("mcmf.out",std::ios_base::app);
+  // std::ofstream out_file;
+  // out_file.open("mcmf.out");
   // termination is when the problem is
   // unfeasible which cause the whole program to exit
   int flow = 10;
   while(true){
     SetFlow(flow);
-    Solve(false,true,out_file,min_cost);
+    Solve(false,true,out,min_cost);
     file.open(in);
     LoadFromFile(file);
-    out_file.open("mcmf.out",std::ios_base::app);
     flow += flow_step;
-    std::cout << flow << std::endl;
+    //std::cout << flow << std::endl;
   }
-  out_file.close();
 }
 
 np::ndarray MCMF_CS2::python_solution(int edges)
@@ -256,7 +267,13 @@ np::ndarray MCMF_CS2::python_solution(int edges)
   return py_array;
 }
 
-np::ndarray MCMFProblem::PythonTrajectories(int flow_step = 10){
+np::ndarray MCMFProblem::PythonTrajectories(int flow_step = 10, int print_status_every = 0){
+  if (print_status_every != 0){
+    std::cout << "Printing Every " << print_status_every << std::endl << std::endl;
+  }
+  else{
+    std::cout << "Running in silent mode\n";
+  }
   p::tuple shape = p::make_tuple(this->edges,3);
   np::dtype dtype = np::dtype::get_builtin<int>();
   np::ndarray Trajectories = np::empty(shape,dtype);
@@ -269,7 +286,6 @@ np::ndarray MCMFProblem::PythonTrajectories(int flow_step = 10){
       this->mcmf.set_arc(Arc[0],Arc[1],Arc[2],Arc[3],Arc[4]);
     }
     SetFlow(flow);
-    std::cout << flow << std::endl;
     int state = 0;
     try{
       state = Solve(this->min_cost);
@@ -280,12 +296,28 @@ np::ndarray MCMFProblem::PythonTrajectories(int flow_step = 10){
       }
     }
     catch(std::runtime_error & e){
+  		// () cleanup;
       std::cout << e.what();
+  		this->mcmf.deallocate_arrays();
       return Trajectories;
+    }
+    if (print_status_every != 0 && (flow % print_status_every) == 0){
+      std::cout << "Current Flow: " << flow << " Current Min Cost: " << this->min_cost << std::endl;
     }
     flow += flow_step;
   }
   return Trajectories;
+}
+
+void MCMFProblem::ReadFile(const std::string & filename){
+  std::ifstream file;
+  file.open(filename);
+  if (file.is_open()){
+    LoadFromFile(file);
+  }
+  else{
+    std::cout << "Read error";
+  }
 }
 
 using namespace boost::python;
@@ -295,6 +327,7 @@ BOOST_PYTHON_MODULE(mcmf_ext)
   class_<MCMFProblem>("MCMFProblem", init<int,np::ndarray,np::ndarray>())
     .def(init<long, long>())
     .def(init<>())
+    .def("ReadFile", &MCMFProblem::ReadFile)
     .def("PythonTrajectories", &MCMFProblem::PythonTrajectories)
   ;
 }
