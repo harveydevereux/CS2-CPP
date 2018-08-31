@@ -33,7 +33,7 @@ What Beetles? see [My MSc Project](https://github.com/harveydevereux/MSc-Project
 Re-organise the C++ code so the Boost.Python is optional
 
 Finish the python module functionality
-- Offer just the min cost algorithm
+- Optimise the flow search (some kind of sampling technique)
 - Complete mirror of networkx.network_simplex input/output
 - Create distributeable?
 - Offer interface with Keras for learning costs? [2]
