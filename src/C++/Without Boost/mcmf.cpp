@@ -519,7 +519,7 @@ int MCMF_CS2::relabel( NODE *i)
 
 	// 1/2 arcs are scanned;
 	for ( a = i->current() + 1, a_stop = (i + 1)->suspended(); a != a_stop; a ++ ) {
-		
+
 		if ( OPEN(a) && ( (dp = (a->head()->price() - a->cost())) > p_max ) ) {
 			if ( i_price < dp ) {
 				i->set_current( a);
@@ -1692,7 +1692,7 @@ void MCMF_CS2::err_end(int cc)
 
 
 
-int MCMF_CS2::run_cs2(bool debug, bool write_ans, std::string & out, int & current_min)
+int MCMF_CS2::run_cs2(bool debug, bool write_ans, std::string & out, int & current_min, int & cost)
 {
   // see mcmf.cpp for the original version of this function
   // that I have adapted
@@ -1746,6 +1746,7 @@ int MCMF_CS2::run_cs2(bool debug, bool write_ans, std::string & out, int & curre
 	}
 	// () PRINT_ANS?
 	std::cout << objective_cost << std::endl;
+	cost = objective_cost;
 	if ( write_ans == true ) {
 		if (objective_cost < current_min){
 			current_min = objective_cost;

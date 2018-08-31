@@ -521,7 +521,7 @@ int MCMF_CS2::relabel( NODE *i)
 	// 1/2 arcs are scanned;
 	for ( a = i->current() + 1, a_stop = (i + 1)->suspended(); a != a_stop; a ++ ) {
 			// SEGFAULT  in a->head()->price() with flow 4970 and file 16210.in
-					if (a->head()->price()== NULL){
+					if (a->head()->price() == NULL){
 						// ?? HOLY SHIT WHY!
 						// ONLY A PROBLEM WITH BOOST??
 						a->head()->set_price(1);
@@ -1787,7 +1787,7 @@ void MCMF_CS2::solution(std::ofstream & out)
 	out.close();
 }
 
-int MCMF_CS2::run_cs2_python(int & current_min)
+int MCMF_CS2::run_cs2_python(int & current_min, int & cost)
 {
   // see mcmf.cpp for the original version of this function
   // that I have adapted
@@ -1807,6 +1807,7 @@ int MCMF_CS2::run_cs2_python(int & current_min)
 
   cs2( &objective_cost );
   double t = 0.0;
+	cost = objective_cost;
 	if (objective_cost < current_min){
 		//std::cout << objective_cost << std::endl;
 		current_min = objective_cost;

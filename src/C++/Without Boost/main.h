@@ -139,6 +139,14 @@ public:
   void LoadFromFile(std::ifstream & file){
     this->source_sink_id = ProblemFromFile(this->mcmf,file);
   }
+  int Solve(bool debug, bool write_ans, std::string & out, int & min_cost, int & cost){
+    return this->mcmf.run_cs2(debug, write_ans, out, min_cost, cost);
+  }
+  void TrajectoryAlgorithm(std::string & in, std::string & out, int flow_step = 10);
+  void Flow(int & flow){
+    this->flow = flow;
+  }
+protected:
   void SetFlow(int & flow){
     if (source_sink_id[0] > 0 && source_sink_id[1] > 0){
       this->mcmf.set_supply_demand_of_node(source_sink_id[0], flow);
@@ -149,17 +157,12 @@ public:
       std::cout << "Or node label 0 is invalid start with 1";
     }
   }
-  int Solve(bool debug, bool write_ans, std::string & out, int & min_cost){
-    return this->mcmf.run_cs2(debug, write_ans, out, min_cost);
-  }
-  void TrajectoryAlgorithm(std::string & in, std::string & out, int flow_step = 10);
-
-protected:
   //std::vector<int> ReadData(std::string & line);
   std::vector< std::vector<int> > Arcs;
   std::vector<int> source_sink_id = {0,0};
-  int flow;
+  int flow = 0;
   int min_cost;
+  int cost;
   bool read_data = false;
   int edges;
   int nodes;
@@ -174,14 +177,20 @@ void MCMFProblem::TrajectoryAlgorithm(std::string & in,std::string & out, int fl
   // out_file.open("mcmf.out");
   // termination is when the problem is
   // unfeasible which cause the whole program to exit
-  int flow = 10;
+  int change = 0;
+  int prev_cost = 0;
   while(true){
-    std::cout << flow << std::endl;
-    SetFlow(flow);
-    Solve(false,true,out,min_cost);
+    SetFlow(this->flow);
+    Solve(false,true,out,this->min_cost,this->cost);
+    change = this->cost - prev_cost;
+    if (change > 0){
+      std::cout << "Reached convex minimum";
+      return;
+    }
     file.open(in);
     LoadFromFile(file);
     flow += flow_step;
-    //std::cout << flow << std::endl;
+    prev_cost = this->cost;
+    std::cout << flow << std::endl;
   }
 }

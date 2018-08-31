@@ -316,7 +316,7 @@ class MCMF_CS2
 	int run_cs2();
   // Harvey
   int run_cs2(bool debug, bool write_ans, std::string & out, int & current_min);
-  int run_cs2_python(int & current_min);
+  int run_cs2_python(int & current_min, int & cost);
   np::ndarray python_solution(int edges);
   void solution(std::ofstream & out);
 	// shared utils;

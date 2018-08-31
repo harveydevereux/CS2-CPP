@@ -8,3 +8,9 @@ src/C\+\+/t\.pyc
 src/C\+\+/t\.txt
 
 src/C\+\+/back\.tar\.gz
+
+*.in
+
+*.out
+
+src/C\+\+/Without Boost/200b-0-100-N=5-Trajectories

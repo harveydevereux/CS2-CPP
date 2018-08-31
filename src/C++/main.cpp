@@ -180,11 +180,15 @@ public:
   int Solve(bool debug, bool write_ans, std::string & out, int & min_cost){
     return this->mcmf.run_cs2(debug, write_ans, out, min_cost);
   }
-  int Solve(int & current_min){
-    return this->mcmf.run_cs2_python(current_min);
+  int Solve(int & current_min, int & cost){
+    return this->mcmf.run_cs2_python(current_min, cost);
   }
   void TrajectoryAlgorithm(std::string & in, std::string & out, int flow_step = 10);
-  np::ndarray PythonTrajectories(int flow_step, int print_status_every);
+  np::ndarray PythonTrajectories(int flow_step, int print_status_every, bool store_costs, int initial_flow);
+  np::ndarray Costs();
+  int GetFinalFlow(){
+    return this->final_flow;
+  }
 
 protected:
   //std::vector<int> ReadData(std::string & line);
@@ -203,9 +207,12 @@ protected:
   std::vector<int> source_sink_id = {0,0};
   int flow;
   int min_cost;
+  int final_flow = -1;
+  int cost;
   bool read_data = false;
   int edges;
   int nodes;
+  std::vector< std::vector<int> > costs;
   MCMF_CS2 mcmf;
 };
 
@@ -220,6 +227,19 @@ void MCMFProblem::GetArcs(np::ndarray & py_arcs){
   }
 }
 
+np::ndarray MCMFProblem::Costs(){
+    p::tuple shape = p::make_tuple(this->costs.size(),2);
+    np::dtype dtype = np::dtype::get_builtin<int>();
+    np::ndarray py_array = np::empty(shape,dtype);
+
+    for (unsigned i = 0; i < this->costs.size(); i++){
+      for (unsigned j = 0; j < this->costs[i].size(); j++){
+        py_array[i][j] = this->costs[i][j];
+      }
+    }
+    return py_array;
+}
+
 void MCMFProblem::TrajectoryAlgorithm(std::string & in,std::string & out, int flow_step){
   std::ifstream file;
   file.open(in);
@@ -228,7 +248,7 @@ void MCMFProblem::TrajectoryAlgorithm(std::string & in,std::string & out, int fl
   // out_file.open("mcmf.out");
   // termination is when the problem is
   // unfeasible which cause the whole program to exit
-  int flow = 10;
+  int flow = 0;
   while(true){
     SetFlow(flow);
     Solve(false,true,out,min_cost);
@@ -267,7 +287,7 @@ np::ndarray MCMF_CS2::python_solution(int edges)
   return py_array;
 }
 
-np::ndarray MCMFProblem::PythonTrajectories(int flow_step = 10, int print_status_every = 0){
+np::ndarray MCMFProblem::PythonTrajectories(int flow_step = 10, int print_status_every = 0, bool store_costs = false, int initial_flow = 0){
   if (print_status_every != 0){
     std::cout << "Printing Every " << print_status_every << std::endl << std::endl;
   }
@@ -277,7 +297,10 @@ np::ndarray MCMFProblem::PythonTrajectories(int flow_step = 10, int print_status
   p::tuple shape = p::make_tuple(this->edges,3);
   np::dtype dtype = np::dtype::get_builtin<int>();
   np::ndarray Trajectories = np::empty(shape,dtype);
-  int flow = 10;
+  int flow = initial_flow;
+  // this is a convex optimisation
+  int change = 0;
+  int prev_cost = 0;
   while(true){
     MCMF_CS2 m(this->nodes,this->edges);
     this->mcmf = m;
@@ -288,12 +311,19 @@ np::ndarray MCMFProblem::PythonTrajectories(int flow_step = 10, int print_status
     SetFlow(flow);
     int state = 0;
     try{
-      state = Solve(this->min_cost);
+      state = Solve(this->min_cost, this->cost);
+      change = this->cost-prev_cost;
       if (state == 1){
         Trajectories = this->mcmf.python_solution(this->edges);
     		// () cleanup;
     		this->mcmf.deallocate_arrays();
       }
+      if (change > 0){
+        std::cout << "Reached the convex minimum\n";
+        this->final_flow = flow-flow_step;
+        return Trajectories;
+      }
+      prev_cost = this->cost;
     }
     catch(std::runtime_error & e){
   		// () cleanup;
@@ -303,6 +333,10 @@ np::ndarray MCMFProblem::PythonTrajectories(int flow_step = 10, int print_status
     }
     if (print_status_every != 0 && (flow % print_status_every) == 0){
       std::cout << "Current Flow: " << flow << " Current Min Cost: " << this->min_cost << std::endl;
+      if (store_costs){
+        std::vector<int> v = {this->cost,flow};
+        this->costs.push_back(v);
+      }
     }
     flow += flow_step;
   }
@@ -328,6 +362,8 @@ BOOST_PYTHON_MODULE(mcmf_ext)
     .def(init<long, long>())
     .def(init<>())
     .def("ReadFile", &MCMFProblem::ReadFile)
-    .def("PythonTrajectories", &MCMFProblem::PythonTrajectories)
+    .def("Trajectories", &MCMFProblem::PythonTrajectories)
+    .def("Costs", &MCMFProblem::Costs)
+    .def("GetFinalFlow", &MCMFProblem::GetFinalFlow)
   ;
 }

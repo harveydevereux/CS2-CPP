@@ -15,7 +15,12 @@ int main(int argc, char ** argv) {
   else{
     flow_step = 10;
   }
+  int flow = 0;
+  if (argc >= 4){
+    flow = std::stoi(argv[3]);
+  }
   MCMFProblem P(0,0);
   std::string out = "mcmf.out";
-  P.TrajectoryAlgorithm(filename, out, 10);
+  P.Flow(flow);
+  P.TrajectoryAlgorithm(filename, out, flow_step);
 }
