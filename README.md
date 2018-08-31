@@ -4,8 +4,12 @@ This is a python module based on a modification of a C++ implementation of CS2 m
 scaling algorithm see CREDITS for full details.
 
 The main additions are reading a certain file structure into the algorithm and outputing the
-cost and flow to a file, this is all wrapped into an MCMFProblem object which includes 
+cost and flow to a file, and this is all wrapped into an MCMFProblem object which includes 
 code to compile a Boost.Python module.
+
+Additionally python methods are provided to solve for the trajectories in a Piecewise fashion by beggining
+each window (after the first) with the last frame of the previous window to converge to the correct result as
+is all the data was inputted at once.
 
 Currently the python module can perform [networkx.network_simplex](https://networkx.github.io/documentation/networkx-1.10/reference/generated/networkx.algorithms.flow.network_simplex.html) with a
 very significant speed up.
@@ -16,7 +20,7 @@ The main goal is to implement algorithm 2 (post graph construction part) of [1] 
 
 Look at the benchmarks to see why it is useful to create a Boost.Python module for this instead of using raw python.
 
-I am using this to (attempt to) reconstruct unique trajectories from a data set of [beetle movement](https://github.com/harveydevereux/MSc-Project)
+I have used this to *succesfully* reconstruct unique trajectories from a data set of [beetle movement](https://github.com/harveydevereux/MSc-Project)
 
 ## Benchmark 
 
@@ -33,7 +37,7 @@ What Beetles? see [My MSc Project](https://github.com/harveydevereux/MSc-Project
 Re-organise the C++ code so the Boost.Python is optional
 
 Finish the python module functionality
-- Optimise the flow search (some kind of sampling technique)
+- Optimise the flow search (some kind of sampling technique) currently have a *user configured* variable step
 - Complete mirror of networkx.network_simplex input/output
 - Create distributeable?
 - Offer interface with Keras for learning costs? [2]
